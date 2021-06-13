@@ -18,6 +18,10 @@
 		"ls_adls_covidreportingdl_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://covidreportingstoredl.dfs.core.windows.net"
+		},
+		"tr_ingest_population_data_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/27ca57f8-3d07-4ec9-93bb-606e93c6ca11/resourceGroups/Covid-Reporting-rg/providers/Microsoft.Storage/storageAccounts/covidreportingstore"
 		}
 	},
 	"variables": {
@@ -318,6 +322,36 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tr_ingest_population_data')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl_Ingest_population_data",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/population/blobs/population_by_age_tsv.gz",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('tr_ingest_population_data_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_Ingest_population_data')]"
+			]
 		}
 	]
 }
